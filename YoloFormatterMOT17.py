@@ -77,14 +77,18 @@ def process_bbox(path, bbox, h, w):
     fd = open(path, 'w')
 
     for box in bbox:
-        xc = box[0] + box[2] / 2.
-        yc = box[1] + box[3] / 2.
+        xc = (box[0] + box[2] / 2.) / w
+        yc = (box[1] + box[3] / 2.) / h
+
+        if xc > 1: xc = 1.0
+        if yc > 1: yc = 1.0
         
         line = str(int(box[-1])) + ' ' + \
-               str(xc / w)       + ' ' + \
-               str(yc / h)       + ' ' + \
+               str(xc)           + ' ' + \
+               str(yc)           + ' ' + \
                str(box[2] / w)   + ' ' + \
                str(box[3] / h)   + '\n'
+
         fd.write(line)
     fd.close()
 
