@@ -1,5 +1,4 @@
 # YoloFormatterMOT17
-# MOT17 Dataset Preprocessing
 
 This repository contains a Python script for preprocessing the MOT17 (Multiple Object Tracking 2017) dataset. The script resizes images, applies letterboxing, and generates YOLO-format label files for training object detection models.
 
@@ -37,7 +36,7 @@ The script is designed to prepare the MOT17 dataset for training object detectio
 1.  Clone the repository:
 
     ```bash
-    git clone [[repository URL]](https://github.com/ckevar/YoloFormatterMOT17.git)
+    git clone https://github.com/ckevar/YoloFormatterMOT17.git
     ```
 
 2.  Install the required packages:
@@ -99,10 +98,6 @@ MOT17/
 4.  Commit your changes (`git commit -am 'Add some feature'`).
 5.  Push to the branch (`git push origin feature/your-feature`).
 6.  Create a new Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
 ## Acknowledgments
 
