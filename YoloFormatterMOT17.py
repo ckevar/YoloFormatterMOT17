@@ -80,8 +80,19 @@ def process_bbox(path, bbox, h, w):
         xc = (box[0] + box[2] / 2.) / w
         yc = (box[1] + box[3] / 2.) / h
 
-        if xc > 1: xc = 1.0
-        if yc > 1: yc = 1.0
+        if xc > 1: 
+            xc = 1.0
+            box[2] = w - box[0]
+        elif xc < 0:
+            box[2] += box[0]
+            xc = 0.0
+        
+        if yc > 1: 
+            yc = 1.0
+            box[3] = h - box[1]
+        elif yc < 0: 
+            box[3] += box[1]
+            yc = 0.0
         
         line = str(int(box[-1])) + ' ' + \
                str(xc)           + ' ' + \
