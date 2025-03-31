@@ -185,12 +185,13 @@ def init(root_dir, config):
 
 def parse_user_input(argv):
     configs = list(CONFIG.keys())
-    if (len(argv) < USER_INPUT_LEN) or (argv[2] not in configs):
-        print("\nusage: python3 {} <dir> <imgsz>\n"\
-              "  dir   : directory of MOT-17 dataset\n"\
-              "  imgsz : {}".format(argv[0], configs))
-        exit()
-
+    args = int(len(argv))
+    
+    if (args < USER_INPUT_LEN) or (argv[2] not in configs):
+        print("\nusage: python3 {} <src dir> <imgsz>\n"\
+              "  src dir : directory of MOT-17 dataset\n"\
+              "  imgsz   : {}\n".format(argv[0], configs))
+    
     return argv[1], CONFIG[argv[2]]
 
 if "__main__" == __name__:
