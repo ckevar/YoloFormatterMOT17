@@ -142,6 +142,7 @@ YOLO_DIRS[1] + ": images/" + YOLO_DIRS[1] + '\n' + \
 YOLO_DIRS[2] + ": images/" + YOLO_DIRS[2] + '\n' + \
 "\n" \
 "names:\n" \
+"    0: _background_\n" \
 "    1: Pedestrian\n" \
 "    2: Person on vehicle\n" \
 "    3: Car\n" \
