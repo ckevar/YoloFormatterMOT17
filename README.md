@@ -54,7 +54,7 @@ The script is designed to prepare the MOT17 dataset for training object detectio
 2.  Run the script from the command line, providing the dataset directory and desired image size:
 
     ```bash
-    python3 main.py <dataset_directory> <image_size>
+    python3 YoloFormatterMOT17.py <dataset_directory> <image_size>
     ```
     
     * `<dataset_directory>`: The path to the root directory of the MOT17 dataset.
@@ -63,7 +63,7 @@ The script is designed to prepare the MOT17 dataset for training object detectio
     **Example:**
 
     ```bash
-    python3 main.py /path/to/MOT17/dataset IMG_640x640
+    python3 YoloFormatterMOT17.py /path/to/MOT17/dataset IMG_640x640
     ```
 
     The processed images and labels will be saved in a new directory within the MOT17 root directory, named `letterbox_640x640` or `letterbox_480x480` depending on the selected image size.
