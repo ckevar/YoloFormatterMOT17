@@ -23,12 +23,6 @@ class ImgStream:
     def __init__(self, ds_path):
         self.path = ds_path
         self._load_det_(ds_path)
-        self._touch_output_(ds_path)
-    
-    def _touch_output_(self, some_path):
-        self.est_file = some_path + "/det/det.txt"
-        f = open(self.est_file, 'w')
-        f.close()
 
     def _load_det_(self, ds_path):
         self.dets = np.loadtxt(ds_path + "/gt/gt.txt", delimiter=',')
