@@ -54,16 +54,7 @@ The script is designed to prepare the MOT17 dataset for training object detectio
     ```bash
     python3 main.py <dataset_directory> <image_size>
     ```
-MOT17/
-└─ train/
-   ├─ letterbox_640x640/ (or letterbox_480x480)
-      ├─ train/
-      │  ├─ images/
-      │  └─ labels/
-      └─ val/
-         ├─ images/
-         └─ labels/
-
+    
     * `<dataset_directory>`: The path to the root directory of the MOT17 dataset.
     * `<image_size>`: The desired output image size, either `IMG_640x640` or `IMG_480x480`.
 
@@ -78,7 +69,7 @@ MOT17/
 ### Directory Structure
 
 The script creates the following directory structure:
-
+```
 MOT17/
 └─ train/
    ├─ letterbox_640x640/ (or letterbox_480x480)
@@ -88,7 +79,7 @@ MOT17/
       └─ val/
          ├─ images/
          └─ labels/
-
+```
 
 ## Contributing
 
