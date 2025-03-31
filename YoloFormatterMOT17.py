@@ -142,18 +142,18 @@ YOLO_DIRS[1] + ": images/" + YOLO_DIRS[1] + '\n' + \
 YOLO_DIRS[2] + ": images/" + YOLO_DIRS[2] + '\n' + \
 "\n" \
 "names:\n" \
-"    0: Pedestrian\n" \
-"    1: Person on vehicle\n" \
-"    2: Car\n" \
-"    3: Bicycle\n" \
-"    4: Motorbike\n" \
-"    5: Non motorized vehicle\n" \
-"    6: Static person\n" \
-"    7: Distractor\n" \
-"    8: Occluder\n" \
-"    9: Occluder on the ground\n" \
-"    10: Occluder full\n" \
-"    11: Reflection\n"
+"    1: Pedestrian\n" \
+"    2: Person on vehicle\n" \
+"    3: Car\n" \
+"    4: Bicycle\n" \
+"    5: Motorbike\n" \
+"    6: Non motorized vehicle\n" \
+"    7: Static person\n" \
+"    8: Distractor\n" \
+"    9: Occluder\n" \
+"    10: Occluder on the ground\n" \
+"    11: Occluder full\n" \
+"    12: Reflection\n"
 
     fd = open(path + '/data.yaml', 'w')
     fd.write(yaml_content)
