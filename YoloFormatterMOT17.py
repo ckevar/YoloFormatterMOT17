@@ -93,6 +93,9 @@ def process_bbox(path, bbox, h, w):
         elif yc < 0: 
             box[3] += box[1]
             yc = 0.0
+    
+        if box[2] > w: box[2] = w
+        if box[3] > h: box[3] = h
         
         line = str(int(box[-1])) + ' ' + \
                str(xc)           + ' ' + \
