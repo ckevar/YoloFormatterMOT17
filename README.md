@@ -1,6 +1,6 @@
 # YoloFormatterMOT17
 
-This repository contains a Python script for preprocessing the MOT17 (Multiple Object Tracking 2017) dataset. The script resizes images, applies letterboxing, and generates YOLO-format label files for training object detection models.
+This repository contains a Python script for preprocessing the MOT17 (Multiple Object Tracking 2017) dataset. The script resizes images, applies letterboxing, generates YOLO-format label files for training object detection models and generates the `*.yaml` configuration file.
 
 ## Description
 
@@ -10,6 +10,7 @@ The script processes the MOT17 dataset, which consists of image sequences with o
 2.  **Label Generation:** Converts the bounding box annotations from the MOT17 format to the YOLO format, which represents bounding boxes as normalized center coordinates, width, and height.
 3.  **Train/Validation Split:** Randomly splits the processed data into training and validation sets.
 4.  **Directory Structure Creation:** Creates the necessary directory structure for storing the processed images and labels, organized by train and validation sets, and target image sizes.
+5.  **Yaml Configuration:** The dataset configuration format for YOLO, the `path` feature might need to be adjusted manually.
 
 The script is designed to prepare the MOT17 dataset for training object detection models using YOLO architectures.
 
@@ -21,6 +22,7 @@ The script is designed to prepare the MOT17 dataset for training object detectio
 * Generates separate label files for each image.
 * Randomly splits the dataset into training and validation sets.
 * Organizes processed data into a structured directory.
+* Generates the dataset configuration format fo YOLO
 * Supports command-line arguments for specifying the dataset directory and output image size.
 
 ## Getting Started
@@ -73,12 +75,14 @@ The script creates the following directory structure:
 MOT17/
 └─ train/
    ├─ letterbox_640x640/ (or letterbox_480x480)
-      ├─ train/
-      │  ├─ images/
-      │  └─ labels/
-      └─ val/
-         ├─ images/
-         └─ labels/
+      ├─ images/
+      │  ├─ train/
+      │  ├─ val/
+      │  └─ test/   # under development
+      └─ labels/
+         ├─ train/
+         ├─ val/
+         └─ test/   # under development
 ```
 
 ## Contributing
