@@ -24,6 +24,7 @@ The script is designed to prepare the MOT17 dataset for training object detectio
 * Organizes processed data into a structured directory.
 * Generates the dataset configuration format fo YOLO
 * Supports command-line arguments for specifying the dataset directory and output image size.
+* Checks existent output directory and encourage manual removal.
 
 ## Getting Started
 
@@ -54,16 +55,17 @@ The script is designed to prepare the MOT17 dataset for training object detectio
 2.  Run the script from the command line, providing the dataset directory and desired image size:
 
     ```bash
-    python3 YoloFormatterMOT17.py <dataset_directory> <image_size>
+    python3 YoloFormatterMOT17.py <dataset_directory> <output directory> <image_size>
     ```
     
     * `<dataset_directory>`: The path to the root directory of the MOT17 dataset.
+    * `<output directory>`: The path to the output directory where the processed images and labels will be saved.
     * `<image_size>`: The desired output image size, either `IMG_640x640` or `IMG_480x480`.
 
     **Example:**
 
     ```bash
-    python3 YoloFormatterMOT17.py /path/to/MOT17/dataset IMG_640x640
+    python3 YoloFormatterMOT17.py /path/to/MOT17/dataset /tmp IMG_640x640
     ```
 
     The processed images and labels will be saved in a new directory within the MOT17 root directory, named `letterbox_640x640` or `letterbox_480x480` depending on the selected image size.
@@ -72,17 +74,16 @@ The script is designed to prepare the MOT17 dataset for training object detectio
 
 The script creates the following directory structure:
 ```
-MOT17/
-└─ train/
-   ├─ letterbox_640x640/ (or letterbox_480x480)
-      ├─ images/
-      │  ├─ train/
-      │  ├─ val/
-      │  └─ test/   # under development
-      └─ labels/
-         ├─ train/
-         ├─ val/
-         └─ test/   # under development
+[output directory]/
+└─ letterbox_640x640/ (or letterbox_480x480)
+   ├─ images/
+   │  ├─ train/
+   │  ├─ val/
+   │  └─ test/   # under development
+   └─ labels/
+      ├─ train/
+      ├─ val/
+      └─ test/   # under development
 ```
 
 ## Contributing
