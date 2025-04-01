@@ -1,5 +1,6 @@
 import cv2 as cv
 from tqdm import tqdm
+import threading
 import random
 import time
 import sys
@@ -24,7 +25,10 @@ YOLO_DIRS = ['train', 'val', 'test']
 ZERO_PADDING = [0, 0, 0]
 
 def create_target_path(src_file, target_path, tov, config):
-    file_name = src_file.split("/")[-1]
+    
+    aux = src_file.split("/")
+    file_name = aux[-3] + aux[-1]
+
     root_dir = target_path + '/' + config['dir']
 
     img_path = root_dir + '/images/' + tov + '/'  + file_name
@@ -106,7 +110,8 @@ def flip_train_validation(total, train_len=0.8):
         return "train"
 
     return "val"
-    
+
+
 def process_dataset(dataset_path, new_path, config):
     stream = ImgStream(dataset_path)
 
