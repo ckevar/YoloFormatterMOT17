@@ -6,164 +6,196 @@ import time
 import sys
 import os
 
-from datasetMOT17 import ImgStream
-from datasetMOT17 import dataset_train as dataset
+from imgstream import ImgStream
+from dataset import dataset_train as dataset
 
-USER_INPUT_LEN = 4
+USER_INPUT_LEN = 5
 CONFIG = {
     'IMG_640x640': {
         'dir' : 'letterbox_640x640',
-        'size' : 640
+        'size' : 640,
+        'stride' : 32,
         },
     'IMG_480x480' : {
         'dir' : 'letterbox_480x480',
-        'size' : 480
+        'size' : 480,
+        'stride' : 32
         }
 } 
 
+DIR_FORMATS = {
+    'MOT17' : 0,
+    'KITTI' : 1,
+}
+
 YOLO_DIRS = ['train', 'val', 'test']
-ZERO_PADDING = [0, 0, 0]
+ZERO_PADDING = [114, 114, 114]
+TRAIN_PERCENTAGE = 0.8
+
+img_path_global = ''
 
 def create_target_path(src_file, target_path, tov, config):
+
+    global img_path_global
     
     aux = src_file.split("/")
-    file_name = aux[-3] + aux[-1]
+    #print("aux", aux)
+    # FIXME: this is the problem, im skipping aux[-2], this is something useful for KITTI but not for MOT17, so we have to find a way to manage this situations.
+    file_name = aux[-3] + aux[-2] +  aux[-1]
+    #print(f"file_name, {file_name}")
 
     root_dir = target_path + '/' + config['dir']
-
+    #print(f"root_dir {root_dir}, tov {tov}, file_name {file_name}")
     img_path = root_dir + '/images/' + tov + '/'  + file_name
     label_path = root_dir + '/labels/' + tov + '/' + file_name.split(".")[0] + '.txt'
 
     return img_path, label_path
 
-def letterbox(ratio, config):
+def __letterbox__(ratio, config):
     yolo_sz = config['size']
+    yolo_stride = config['stride']
 
     new_hw = int(yolo_sz / ratio)
     padding_pixels = int(yolo_sz - new_hw)
+    padding_pixels = padding_pixels % yolo_stride
 
-    margin0 = padding_pixels // 2
+    margin0 = int(padding_pixels / 2)
     margin1 = margin0 + (padding_pixels & 1)
 
-    return yolo_sz, new_hw, margin0, margin1
+    return yolo_sz, new_hw, margin0, margin1 
+
+def letterbox_dim(shape, config):
+    ratio = shape[1]/shape[0]
     
-def process_image(dst, src, config):
-    img = cv.imread(src, cv.IMREAD_COLOR)
-    
-    h, w = img.shape[:2]
-    ratio = w/h
-    top = bottom = left = right = 0
+    new_dim = __letterbox__(ratio, config)
 
     if ratio > 1:
-        new_width, new_height, top, bottom = letterbox(ratio, config)
-    else:
-        new_height, new_width, left, right = letterbox(ratio, config)
+        return (new_dim[0], new_dim[1]), new_dim[2], new_dim[3], 0, 0
+    
+    return (new_dim[1], new_dim[0]), 0, 0, new_dim[2], new_dim[3]
+    
+def process_image(dst_path, src_path, config):
+    img = cv.imread(src_path, cv.IMREAD_COLOR)
+    top = bottom = left = right = 0
 
-    new_img = cv.resize(img, (new_width, new_height))
+    new_shape, top, bottom, left, right = letterbox_dim(img.shape, config)
+
+    new_img = cv.resize(img, new_shape)
+
     new_img = cv.copyMakeBorder(new_img, 
                                 top, 
-                                bottom,
+                                bottom, 
                                 left, 
                                 right, 
                                 cv.BORDER_CONSTANT, 
                                 value=ZERO_PADDING)
-    cv.imwrite(dst, new_img)
-    return h, w
 
-def process_bbox(path, bbox, h, w):
+    cv.imwrite(dst_path, new_img)
+    return [left, top, img.shape[1], img.shape[0]]
+
+def process_image2(dst_path, canvas, artwork, new_dims, src_path):
+    img = cv.imread(src_path, cv.IMREAD_COLOR)
+    cv.resize(src=img, dsize=new_dims, dst=artwork)
+    cv.imwrite(dst_path, canvas)
+
+def resize_bbox(bbox, imgW, imgH):
+
+    left, top, width, height = bbox
+    xc = (left + width / 2.) / imgW
+    yc = (top + height / 2.) / imgH
+
+    if xc > 1: 
+        xc = 1.0
+        width = imgW - left
+
+    elif xc < 0:
+        xc = 0.0
+        width = width + left
+    
+    if yc > 1: 
+        yc = 1.0
+        height = imgH - top
+
+    elif yc < 0: 
+        yc = 0.0
+        height = height + top
+    
+    if width > imgW: 
+        width = imgW
+    if height > imgH: 
+        height = imgH
+
+    return xc, yc, width/imgW, height/imgH
+        
+
+def process_bbox(path, bbox_set, img_dim):
+    imgH = img_dim[3]
+    imgW = img_dim[2]
+
     fd = open(path, 'w')
 
-    for box in bbox:
-        xc = (box[0] + box[2] / 2.) / w
-        yc = (box[1] + box[3] / 2.) / h
+    for bbox in bbox_set:
+        xc, yc, width, height = resize_bbox(bbox[:4], imgW, imgH)
+        fd.write(f"{int(bbox[-1])} {xc} {yc} {width} {height}\n")
 
-        if xc > 1: 
-            xc = 1.0
-            box[2] = w - box[0]
-
-        elif xc < 0:
-            box[2] += box[0]
-            xc = 0.0
-        
-        if yc > 1: 
-            yc = 1.0
-            box[3] = h - box[1]
-
-        elif yc < 0: 
-            box[3] += box[1]
-            yc = 0.0
-    
-        if box[2] > w: box[2] = w
-        if box[3] > h: box[3] = h
-        
-        line = str(int(box[-1])) + ' ' + \
-               str(xc)           + ' ' + \
-               str(yc)           + ' ' + \
-               str(box[2] / w)   + ' ' + \
-               str(box[3] / h)   + '\n'
-
-        fd.write(line)
     fd.close()
 
-def flip_train_validation(total, train_len=0.8):
-    if random.random() < train_len:
-        return "train"
+def process_dataset(dataset_format, dataset_path, new_path, config):
+    stream = ImgStream(dataset_path, dataset_format)
 
-    return "val"
-
-
-def process_dataset(dataset_path, new_path, config):
-    stream = ImgStream(dataset_path)
-
-    for bbox, src_path in stream.streamPath():
-        tov = flip_train_validation(stream.frame_count)
+    for bbox, src_path in stream.framePath():
+        tov = "train" if random.random() < TRAIN_PERCENTAGE else "val"
         img_path, label_path = create_target_path(src_path, new_path, tov, config)
-        h, w = process_image(img_path, src_path, config)
-        process_bbox(label_path, bbox, h, w)
+        new_dim = process_image(img_path, src_path, config)
+        process_bbox(label_path, bbox, new_dim)
 
-def create_yaml(root_dir, config):
-    path = root_dir + '/' + config['dir']
+def process_dataset2(dataset_format, dataset_path, new_path, config):
+    stream = ImgStream(dataset_path, dataset_format)
+    canvas, artwork, meta_dims = stream.imgalloc(config['size'], stride=config['stride'])
+
+    for bbox, src_path in stream.framePath():
+        tov = "train" if random.random() < TRAIN_PERCENTAGE else "val"
+        img_path, label_path = create_target_path(src_path, new_path, tov, config)
+        process_image2(img_path, canvas, artwork, meta_dims[4:], src_path)
+        process_bbox(label_path, bbox, meta_dims[:4])
+
+def create_yaml(root_dir, config, meta):
+    path = f"{root_dir}/{config['dir']}"
 
     yaml_content = \
-"# YOLO Dataset Configuration for MOT17\n" \
-"# Auto-generated by YoloFormatterMOT17\n" \
-"# Author: C. Alvarado @ https://github.com/ckevar\n" \
-"# Date: " + time.asctime() + '\n' \
-"#\n"\
-"# Configuration:\n"\
-"#   image_size: " + str(config['size']) + 'x' + str(config['size']) + '\n' \
-"#   nc: 12\n"\
-"\n"\
-"path: " + path + '\n' + \
-YOLO_DIRS[0] + ": images/" + YOLO_DIRS[0] + '\n' + \
-YOLO_DIRS[1] + ": images/" + YOLO_DIRS[1] + '\n' + \
-YOLO_DIRS[2] + ": images/" + YOLO_DIRS[2] + '\n' + \
-"\n" \
-"names:\n" \
-"    0: _background_\n" \
-"    1: Pedestrian\n" \
-"    2: Person on vehicle\n" \
-"    3: Car\n" \
-"    4: Bicycle\n" \
-"    5: Motorbike\n" \
-"    6: Non motorized vehicle\n" \
-"    7: Static person\n" \
-"    8: Distractor\n" \
-"    9: Occluder\n" \
-"    10: Occluder on the ground\n" \
-"    11: Occluder full\n" \
-"    12: Reflection\n"
+f"#\n" \
+f"# YOLO Dataset Configuration for {meta['dataset']}\n" \
+f"#\n" \
+f"# Auto-generated by YoloFormatterMOT17\n" \
+f"#\n" \
+f"#   Author: C. Alvarado @ https://github.com/ckevar\n" \
+f"#   Date: {time.asctime()}\n" \
+f"#\n" \
+f"# Configuration:\n" \
+f"#   image_size: {config['size']}x{config['size']}\n" \
+f"#   nc: {meta['nc']}\n" \
+f"#\n" \
+f"path: {path}\n" \
+f"{YOLO_DIRS[0]}: images/{YOLO_DIRS[0]}\n" \
+f"{YOLO_DIRS[1]}: images/{YOLO_DIRS[1]}\n" \
+f"{YOLO_DIRS[2]}: images/{YOLO_DIRS[2]}\n" \
+f"\n" \
+f"names:\n"
+    
+    for name in meta['names']:
+        yaml_content += f"    {meta['names'][name]}: {name.decode('utf-8')}\n"
 
     fd = open(path + '/data.yaml', 'w')
     fd.write(yaml_content)
     fd.close()
     
-def main(root_dir, dest_dir, config):
+def main(dir_format, root_dir, dest_dir, config):
+    dataset_request = dataset[dir_format]['paths']
+    
+    for ds in tqdm(dataset_request):
+        process_dataset2(dir_format, root_dir + '/' + ds, dest_dir, config)
 
-    for ds in tqdm(dataset):
-        process_dataset(root_dir + '/' + ds, dest_dir, config)
-
-    create_yaml(dest_dir, config)
+    create_yaml(dest_dir, config, dataset[dir_format]['meta'])
 
 def _make_directory_(target_dir):
     try:
@@ -203,19 +235,19 @@ def init(root_dir, config):
 def parse_user_input(argv):
     configs = list(CONFIG.keys())
     args = int(len(argv))
+    dir_formats = list(DIR_FORMATS.keys())
     
-    if (args < USER_INPUT_LEN) or (argv[3] not in configs):
-        print("\nusage: python3 {} <src dir> <dst dir> <imgsz>\n"\
-              "  src dir : directory of MOT-17 dataset\n"\
-              "  dst dir : directory for the YOLO format dataset\n"\
-              "  imgsz   : {}\n".format(argv[0], configs))
+    if (args < USER_INPUT_LEN) or (argv[4] not in configs):
+        print(f"\nusage: python3 {argv[0]} <src dir> <dst dir> <imgsz>\n"\
+              f"  dir format : {dir_formats}\n"
+              "  src dir    : directory of the dataset dataset\n"\
+              "  dst dir    : directory for the YOLO formatted dataset\n"\
+              f"  imgsz      : {configs}\n")
         exit()
-    
-    return argv[1], argv[2], CONFIG[argv[3]]
+    return argv[1], argv[2], argv[3], CONFIG[argv[4]]
 
 if "__main__" == __name__:
-    src_dir, dest_dir, config = parse_user_input(sys.argv)
-
+    dir_format, src_dir, dest_dir, config = parse_user_input(sys.argv)
     init(dest_dir, config)
-    main(src_dir, dest_dir, config)
+    main(dir_format, src_dir, dest_dir, config)
 
