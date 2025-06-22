@@ -60,9 +60,9 @@ The script is designed to prepare the supported datasets for training object det
 2.  Run the script from the command line, providing the dataset directory and desired image size:
 
     ```bash
-    python3 YoloFormatterMOT17.py <dataset_directory> <output directory> <image_size>
+    python3 YoloFormatterMOT17.py <dir_format> <dataset_directory> <output directory> <image_size>
     ```
-    
+    * `<dir format>`: The dataset type, either `MOT17` or `KITTI`
     * `<dataset_directory>`: The path to the root directory of the dataset.
     * `<output directory>`: The path to the output directory where the processed images and labels will be saved.
     * `<image_size>`: The desired output image size, either `IMG_640x640` or `IMG_480x480`.
