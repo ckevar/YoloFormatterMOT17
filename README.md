@@ -70,7 +70,7 @@ The script is designed to prepare the supported datasets for training object det
     **Example:**
 
     ```bash
-    python3 YoloFormatterMOT17.py /path/to/dataset /tmp IMG_640x640
+    python3 YoloFormatterMOT17.py KITTI /path/to/KITTI/dataset /tmp IMG_640x640
     ```
 
     The processed images and labels will be saved in a new directory within the root directory, named `letterbox_640x640` or `letterbox_480x480` depending on the selected image size.
