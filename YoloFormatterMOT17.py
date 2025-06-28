@@ -74,32 +74,12 @@ def letterbox_dim(shape, config):
     
     return (new_dim[1], new_dim[0]), 0, 0, new_dim[2], new_dim[3]
     
-def process_image(dst_path, src_path, config):
-    img = cv.imread(src_path, cv.IMREAD_COLOR)
-    top = bottom = left = right = 0
-
-    new_shape, top, bottom, left, right = letterbox_dim(img.shape, config)
-
-    new_img = cv.resize(img, new_shape)
-
-    new_img = cv.copyMakeBorder(new_img, 
-                                top, 
-                                bottom, 
-                                left, 
-                                right, 
-                                cv.BORDER_CONSTANT, 
-                                value=ZERO_PADDING)
-
-    cv.imwrite(dst_path, new_img)
-    return [left, top, img.shape[1], img.shape[0]]
-
 def process_image2(dst_path, canvas, artwork, new_dims, src_path):
     img = cv.imread(src_path, cv.IMREAD_COLOR)
     cv.resize(src=img, dsize=new_dims, dst=artwork)
     cv.imwrite(dst_path, canvas)
 
 def resize_bbox(bbox, imgW, imgH):
-
     left, top, width, height = bbox
     xc = (left + width / 2.) / imgW
     yc = (top + height / 2.) / imgH
@@ -129,25 +109,15 @@ def resize_bbox(bbox, imgW, imgH):
         
 
 def process_bbox(path, bbox_set, img_dim):
-    imgH = img_dim[3]
-    imgW = img_dim[2]
+    _, _, imgH, imgW = img_dim
 
     fd = open(path, 'w')
 
     for bbox in bbox_set:
         xc, yc, width, height = resize_bbox(bbox[:4], imgW, imgH)
-        fd.write(f"{int(bbox[-1])} {xc} {yc} {width} {height}\n")
+        fd.write(f"{int(bbox[-1])} {xc:.06f} {yc:.6f} {width:.6f} {height:.6f}\n")
 
     fd.close()
-
-def process_dataset(dataset_format, dataset_path, new_path, config):
-    stream = ImgStream(dataset_path, dataset_format)
-
-    for bbox, src_path in stream.framePath():
-        tov = "train" if random.random() < TRAIN_PERCENTAGE else "val"
-        img_path, label_path = create_target_path(src_path, new_path, tov, config)
-        new_dim = process_image(img_path, src_path, config)
-        process_bbox(label_path, bbox, new_dim)
 
 def process_dataset2(dataset_format, dataset_path, new_path, config):
     stream = ImgStream(dataset_path, dataset_format)
@@ -156,7 +126,7 @@ def process_dataset2(dataset_format, dataset_path, new_path, config):
     for bbox, src_path in stream.framePath():
         tov = "train" if random.random() < TRAIN_PERCENTAGE else "val"
         img_path, label_path = create_target_path(src_path, new_path, tov, config)
-        process_image2(img_path, canvas, artwork, meta_dims[4:], src_path)
+        # process_image2(img_path, canvas, artwork, meta_dims[4:], src_path)
         process_bbox(label_path, bbox, meta_dims[:4])
 
 def create_yaml(root_dir, config, meta):
