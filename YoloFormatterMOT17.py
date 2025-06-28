@@ -39,13 +39,9 @@ def create_target_path(src_file, target_path, tov, config):
     global img_path_global
     
     aux = src_file.split("/")
-    #print("aux", aux)
-    # FIXME: this is the problem, im skipping aux[-2], this is something useful for KITTI but not for MOT17, so we have to find a way to manage this situations.
     file_name = aux[-3] + aux[-2] +  aux[-1]
-    #print(f"file_name, {file_name}")
 
     root_dir = target_path + '/' + config['dir']
-    #print(f"root_dir {root_dir}, tov {tov}, file_name {file_name}")
     img_path = root_dir + '/images/' + tov + '/'  + file_name
     label_path = root_dir + '/labels/' + tov + '/' + file_name.split(".")[0] + '.txt'
 
@@ -126,7 +122,7 @@ def process_dataset2(dataset_format, dataset_path, new_path, config):
     for bbox, src_path in stream.framePath():
         tov = "train" if random.random() < TRAIN_PERCENTAGE else "val"
         img_path, label_path = create_target_path(src_path, new_path, tov, config)
-        # process_image2(img_path, canvas, artwork, meta_dims[4:], src_path)
+        process_image2(img_path, canvas, artwork, meta_dims[4:], src_path)
         process_bbox(label_path, bbox, meta_dims[:4])
 
 def create_yaml(root_dir, config, meta):
