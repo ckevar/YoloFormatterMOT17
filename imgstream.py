@@ -37,7 +37,7 @@ class ImgStream:
         self.cols_of_interest = [2, 3, 4, 5, 6, 7]
         self.callback = default_rearrange
 
-    def __init_kitti__(self):
+    def __init_kitti__(self, path):
         gt_path = path.split('/')
         gt_path[-2] = 'label_02'
         gt_path = '/'.join(gt_path) + '.txt'
